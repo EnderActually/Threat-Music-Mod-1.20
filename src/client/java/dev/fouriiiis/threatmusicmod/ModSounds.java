@@ -174,21 +174,39 @@ public class ModSounds {
         savedBiomeTagRegionKeys = ConfigManager.loadSavedBiomeTagKeys();
         defaultBiomeTagRegionKeys = ConfigManager.loadDefaultBiomeTagKeys();
 
-        try {
-            ambientMusicMode = AmbientMusicMode.valueOf((String) ConfigManager.loadConfig("ambientMusicMode"));
-        } catch (IllegalArgumentException e) {
-            ambientMusicMode = AmbientMusicMode.ON; // default value
-            System.out.println("Invalid ambientMusicMode value in config, defaulting to ON");
+        Object rawAmbientMusicMode = ConfigManager.loadConfig("ambientMusicMode");
+        if (rawAmbientMusicMode instanceof String ambientMusicModeString) {
+            try {
+                ambientMusicMode = AmbientMusicMode.valueOf(ambientMusicModeString);
+            } catch (IllegalArgumentException e) {
+                ambientMusicMode = AmbientMusicMode.ON;
+                System.out.println("Invalid ambientMusicMode value in config, defaulting to ON");
+            }
+        } else {
+            ambientMusicMode = AmbientMusicMode.ON;
+            System.out.println("Missing ambientMusicMode value in config, defaulting to ON");
         }
 
-        try {
-            currentMode = DetectionMode.valueOf((String) ConfigManager.loadConfig("currentMode"));
-        } catch (IllegalArgumentException e) {
-            currentMode = DetectionMode.BIOME_NAME; // default value
-            System.out.println("Invalid currentMode value in config, defaulting to OFF");
+        Object rawCurrentMode = ConfigManager.loadConfig("currentMode");
+        if (rawCurrentMode instanceof String currentModeString) {
+            try {
+                currentMode = DetectionMode.valueOf(currentModeString);
+            } catch (IllegalArgumentException e) {
+                currentMode = DetectionMode.BIOME_NAME;
+                System.out.println("Invalid currentMode value in config, defaulting to BIOME_NAME");
+            }
+        } else {
+            currentMode = DetectionMode.BIOME_NAME;
+            System.out.println("Missing currentMode value in config, defaulting to BIOME_NAME");
         }
 
-        currentRegionKey = (String) ConfigManager.loadConfig("currentRegionKey");
+        Object rawCurrentRegionKey = ConfigManager.loadConfig("currentRegionKey");
+        if (rawCurrentRegionKey instanceof String currentRegionKeyString) {
+            currentRegionKey = currentRegionKeyString;
+        } else {
+            currentRegionKey = "None";
+            System.out.println("Missing currentRegionKey in config, defaulting to None");
+        }
 
         //check that the regions from biomeRegionKeys are in the regions map, if not, set them to "None" in all maps and save
         for (String key : biomeRegionKeys.keySet()) {
