@@ -1,7 +1,10 @@
 package dev.fouriiiis.threatmusicmod;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,19 +30,8 @@ public class AmbientMusicManager {
     public static void playAmbientSound(String soundKey, float targetVolume) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client != null && ModSounds.soundEvents.containsKey(soundKey)) {
-            SoundInstance soundInstance = new SoundInstance(
-                    ModSounds.soundEvents.get(soundKey).getId(),
-                    SoundInstance.Type.MUSIC,
-                    targetVolume,
-                    1.0f,
-                    false,
-                    0,
-                    SoundInstance.AttenuationType.NONE,
-                    0,
-                    0,
-                    0,
-                    true
-            );
+            SoundEvent soundEvent = ModSounds.soundEvents.get(soundKey);
+            SoundInstance soundInstance = new AmbientSoundInstance(soundEvent, targetVolume);
             client.getSoundManager().play(soundInstance);
         } else {
             System.out.println("Sound key not found: " + soundKey);
@@ -52,7 +44,24 @@ public class AmbientMusicManager {
     public static void stopAllAmbient() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client != null) {
-            client.getSoundManager().stopSounds(null, SoundInstance.Type.MUSIC);
+            client.getSoundManager().stopSounds(null, SoundCategory.MUSIC);
+        }
+    }
+
+    private static class AmbientSoundInstance extends MovingSoundInstance {
+        AmbientSoundInstance(SoundEvent sound, float volume) {
+            super(sound, SoundCategory.MUSIC, SoundInstance.createRandom());
+            this.repeat = false;
+            this.repeatDelay = 0;
+            this.relative = true;
+            this.volume = volume;
+        }
+
+        @Override
+        public void tick() {
+            if (this.isDone()) {
+                return;
+            }
         }
     }
 
