@@ -13,6 +13,8 @@ import java.util.List;
 
 import org.spongepowered.asm.mixin.Mixin;
 import dev.fouriiiis.threatmusicmod.CustomMobEntity;
+import dev.fouriiiis.threatmusicmod.ThreatTracker;
+import net.minecraft.entity.Entity;
 
 
 
@@ -38,11 +40,11 @@ public abstract class MobEntityMixin implements CustomMobEntity {
     @Override
     public float getAgro() {
 
-        if ((((LivingEntity) (Object) this) instanceof Monster) && !(((LivingEntity) (Object) this) instanceof Angerable) && !exceptions.contains(this.getClass()) || (((LivingEntity) (Object) this) instanceof PlayerEntity)) {
-            //System.out.println("Hostile mob");
+        if (ThreatTracker.wasRecentlyAttackedByPlayer((Entity) (Object) this)) {
+            return 1.0f;
+        } else if ((((LivingEntity) (Object) this) instanceof Monster) && !(((LivingEntity) (Object) this) instanceof Angerable) && !exceptions.contains(this.getClass()) || (((LivingEntity) (Object) this) instanceof PlayerEntity)) {
             return 1.0f;
         } else if (((MobEntity) (Object) this).isAttacking()) {
-            //System.out.println("Agro");
             return 1.0f;
         }
         //System.out.println("Not agro");

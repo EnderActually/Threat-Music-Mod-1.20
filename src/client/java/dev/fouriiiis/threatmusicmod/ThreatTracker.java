@@ -19,6 +19,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.MathHelper;
@@ -45,6 +46,8 @@ public class ThreatTracker implements StartTick {
     private static Region region;
   
     public static Map<Entity, Float> trackedEntities = new HashMap<Entity, Float>();
+    public static Map<Entity, Integer> recentlyAttackedByPlayer = new HashMap<Entity, Integer>();
+    private static final int PLAYER_ATTACK_THREAT_TICKS = 80;
 
     List<Float> threatLevels = new ArrayList<Float>();
 
@@ -66,6 +69,17 @@ public class ThreatTracker implements StartTick {
 
             threatLevels.clear();
             targetThreat = 0;
+
+            Iterator<Map.Entry<Entity, Integer>> recentAttackIterator = recentlyAttackedByPlayer.entrySet().iterator();
+            while (recentAttackIterator.hasNext()) {
+                Map.Entry<Entity, Integer> entry = recentAttackIterator.next();
+                int ticks = entry.getValue() - 1;
+                if (ticks <= 0 || entry.getKey().isRemoved()) {
+                    recentAttackIterator.remove();
+                } else {
+                    entry.setValue(ticks);
+                }
+            }
 
             ClientPlayerEntity player = client.player;
 
@@ -321,12 +335,46 @@ public class ThreatTracker implements StartTick {
         return region.getMusic(client);
     }
 
+    public static Entity resolveDamageSource(Entity sourceEntity) {
+        if (sourceEntity instanceof ProjectileEntity projectile && projectile.getOwner() != null) {
+            return projectile.getOwner();
+        }
+        return sourceEntity;
+    }
+
     public static void trackEntity(Entity sourceEntity) {
-        trackedEntities.put(sourceEntity, 0.0f);
+        Entity attacker = resolveDamageSource(sourceEntity);
+        if (!isThreatTarget(attacker)) {
+            return;
+        }
+        trackedEntities.put(attacker, 0.0f);
+    }
+
+    public static void trackPlayerAttackedEntity(Entity targetEntity) {
+        if (!isThreatTarget(targetEntity)) {
+            return;
+        }
+        recentlyAttackedByPlayer.put(targetEntity, PLAYER_ATTACK_THREAT_TICKS);
+        trackedEntities.put(targetEntity, 0.0f);
+    }
+
+    public static boolean wasRecentlyAttackedByPlayer(Entity entity) {
+        return recentlyAttackedByPlayer.containsKey(entity);
+    }
+
+    public static boolean isThreatTarget(Entity entity) {
+        if (!(entity instanceof LivingEntity)) {
+            return false;
+        }
+        if (entity == MinecraftClient.getInstance().player) {
+            return false;
+        }
+        return ((CustomMobEntity) entity).getBaseThreat() > 0f;
     }
 
     public static void clearTrackedThreats() {
         System.out.println("Clearing tracked entities");
-        trackedEntities.clear();	
+        trackedEntities.clear();
+        recentlyAttackedByPlayer.clear();
     }
 }
