@@ -369,6 +369,9 @@ public class ThreatTracker implements StartTick {
         if (entity == MinecraftClient.getInstance().player) {
             return false;
         }
+        if (entity instanceof PlayerEntity) {
+            return true;
+        }
         return ((CustomMobEntity) entity).getBaseThreat() > 0f;
     }
 
