@@ -40,14 +40,8 @@ public class BiomeRegistryChecker {
                     }
 
                     List<TagKey<Biome>> biomeTags = biomeRegistry.entryOf(key).streamTags().toList();
-                    List<TagKey<Biome>> biomeTags2 = biomeEntry.streamTags().toList();
-                    if (biomeTags.isEmpty()) {
-                        System.out.println("  No tags associated with this biome.");
-                        //message the player that there are no tags associated with this biome
-                        client.player.sendMessage(Text.of("No tags associated with biome: " + biomeName), false);
-                    } else {
+                    if (!biomeTags.isEmpty()) {
                         for (TagKey<Biome> tag : biomeTags) {
-                            client.player.sendMessage(Text.of("Biome: " + biomeName + " has tag: " + tag.id().toString()), false);
                             // Add unique tags to the biomeTags map with region "none"
                             String tagName = tag.id().toString();
                             if (ModSounds.savedBiomeTagRegionKeys.containsKey(tagName)) {
