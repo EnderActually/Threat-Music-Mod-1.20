@@ -15,7 +15,6 @@ public class AmbientMusicManager {
      * @return A list of ambient track names.
      */
     public static List<String> getAvailableAmbient() {
-        availableAmbientTracks = 
         return new ArrayList<>(availableAmbientTracks);
     }
 
