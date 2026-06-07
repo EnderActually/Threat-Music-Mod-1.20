@@ -55,7 +55,7 @@ public class ThreatTracker implements StartTick {
     private static final List<Class<?>> targetClasses = new ArrayList<Class<?>>() {
         {
             //add(PathAwareEntity.class);
-            //add(PlayerEntity.class);
+            add(PlayerEntity.class);
             add(Monster.class);
             add(HostileEntity.class);
             add(PassiveEntity.class);
